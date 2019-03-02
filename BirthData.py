@@ -145,6 +145,61 @@ print(
       .any()
       .any()
       )
+# Cigs per week 
+
+
+for val in enumerate(birthdata.loc[ : , 'cigs']):
+    
+    birthdata.loc[val[0], 'cigs'] = birthdata.loc[val[0], 'cigs']*7
+
+#################################
+# Normilize 
+#################################
+
+# Cigs
+birthdata['cigs'] = (birthdata['cigs'] - birthdata['cigs'].min())/(
+        birthdata['cigs'].max() - birthdata['cigs'].min())
+
+# Drinks
+ 
+birthdata['drink'] = (birthdata['drink'] - birthdata['drink'].min())/(
+        birthdata['drink'].max() - birthdata['drink'].min())
+
+# mage
+birthdata['mage'] = (birthdata['mage'] - birthdata['mage'].min())/(
+        birthdata['mage'].max() - birthdata['mage'].min())
+
+# meduc
+birthdata['meduc'] = (birthdata['meduc'] - birthdata['meduc'].min())/(
+        birthdata['meduc'].max() - birthdata['meduc'].min())
+
+# monpre
+birthdata['monpre'] = (birthdata['monpre'] - birthdata['monpre'].min())/(
+        birthdata['monpre'].max() - birthdata['monpre'].min())
+
+# npvis
+birthdata['npvis'] = (birthdata['npvis'] - birthdata['npvis'].min())/(
+        birthdata['npvis'].max() - birthdata['npvis'].min())
+
+# fage
+birthdata['fage'] = (birthdata['fage'] - birthdata['fage'].min())/(
+        birthdata['fage'].max() - birthdata['fage'].min())
+
+# feduc
+birthdata['feduc'] = (birthdata['feduc'] - birthdata['feduc'].min())/(
+        birthdata['feduc'].max() - birthdata['feduc'].min())
+
+# omaps
+birthdata['omaps'] = (birthdata['omaps'] - birthdata['omaps'].min())/(
+        birthdata['omaps'].max() - birthdata['omaps'].min())
+
+# fmaps
+birthdata['fmaps'] = (birthdata['fmaps'] - birthdata['fmaps'].min())/(
+        birthdata['fmaps'].max() - birthdata['fmaps'].min())
+
+# bwght
+birthdata['bwght'] = (birthdata['bwght'] - birthdata['bwght'].min())/(
+        birthdata['bwght'].max() - birthdata['bwght'].min())
 
 
 ###############################################################################
@@ -201,7 +256,7 @@ m_cigs
 m_drink
 
 """
-
+'''
 
 
 ########################
@@ -354,7 +409,7 @@ plt.savefig('Birth Data 3 of 3.png')
 
 plt.show()
 
-
+'''
 birthdata_quantiles = birthdata.loc[:, :].quantile([0.05,
                                                 0.40,
                                                 0.60,
@@ -385,11 +440,11 @@ feduc_lo = 10
 feduc_hi = 17
 
 
-omaps_lo = 6
+omaps_lo = 5
 omaps_hi = 10
 
 
-fmaps_lo = 8
+fmaps_lo = 6
 fmaps_hi = 10
 
 
@@ -521,7 +576,7 @@ for val in enumerate(birthdata.loc[ : , 'omaps']):
 
 for val in enumerate(birthdata.loc[ : , 'omaps']):
     
-    if val[1] > omaps_hi:
+    if val[1] >= omaps_hi:
         birthdata.loc[val[0], 'out_omaps'] = 1
 ########################
 # fmaps
@@ -537,7 +592,7 @@ for val in enumerate(birthdata.loc[ : , 'fmaps']):
 
 for val in enumerate(birthdata.loc[ : , 'fmaps']):
     
-    if val[1] > fmaps_hi:
+    if val[1] >= fmaps_hi:
         birthdata.loc[val[0], 'out_fmaps'] = 1
 ########################
 # cigs
@@ -561,7 +616,24 @@ for val in enumerate(birthdata.loc[ : , 'drink']):
         birthdata.loc[val[0], 'out_drink'] = 1
 
 
+########################
+# bwght
 
+for val in enumerate(birthdata.loc[ : , 'bwght']):
+    
+    if val[1] < 2500:
+        birthdata.loc[val[0], 'out_bwght'] = -1
+
+
+for val in enumerate(birthdata.loc[ : , 'bwght']):
+    
+    if val[1] > 3800:
+        birthdata.loc[val[0], 'out_bwght'] = 1
+
+for val in enumerate(birthdata.loc[ : , 'bwght']):
+    
+    if val[1] >= 2500 and val[1] <= 3800:
+        birthdata.loc[val[0], 'out_bwght'] = 0
 
 ###############################################################################
 # Correlation Analysis
@@ -646,74 +718,46 @@ m_drink
 '''
 
 
-########################
-# Working with Categorical Variables
-########################
-
-# One-Hot Encoding Qualitative Variables
-male_dummies = pd.get_dummies(list(birthdata['male']), drop_first = True)
-
-mwhte_dummies = pd.get_dummies(list(birthdata['mwhte']), drop_first = True)
-
-mblck_dummies = pd.get_dummies(list(birthdata['mblck']), drop_first = True)
-
-moth_dummies = pd.get_dummies(list(birthdata['moth']), drop_first = True)
-
-fwhte_dummies = pd.get_dummies(list(birthdata['fwhte']), drop_first = True)
-
-fblck_dummies = pd.get_dummies(list(birthdata['fblck']), drop_first = True)
-
-foth_dummies = pd.get_dummies(list(birthdata['foth']), drop_first = True)
-
-
-
-# Concatenating One-Hot Encoded Values with the Larger DataFrame
-birthdata_2 = pd.concat(
-        [birthdata.loc[:,:],
-         male_dummies, mwhte_dummies, mblck_dummies,
-         moth_dummies, fwhte_dummies, fblck_dummies, foth_dummies],
-         axis = 1)
-
-birthdata_2.columns
-
-lm_full = smf.ols(formula = """bwght ~     birthdata_2['mage'] +
-                                           birthdata_2['meduc'] +
-                                           birthdata_2['monpre'] +
-                                           birthdata_2['npvis'] +
-                                           birthdata_2['fage'] +
-                                           birthdata_2['feduc'] +
-                                           birthdata_2['omaps'] +
-                                           birthdata_2['fmaps'] +
-                                           birthdata_2['cigs'] +
-                                           birthdata_2['drink'] +
-                                           birthdata_2['male'] +
-                                           birthdata_2['mwhte'] +
-                                           birthdata_2['mblck'] +
-                                           birthdata_2['moth'] +
-                                           birthdata_2['fwhte'] +
-                                           birthdata_2['fblck'] +
-                                           birthdata_2['foth'] +
-                                           birthdata_2['m_meduc'] +
-                                           birthdata_2['m_monpre'] +
-                                           birthdata_2['m_npvis'] +
-                                           birthdata_2['m_fage'] +
-                                           birthdata_2['m_feduc'] +
-                                           birthdata_2['m_omaps'] +
-                                           birthdata_2['m_fmaps'] +
-                                           birthdata_2['m_cigs'] +
-                                           birthdata_2['m_drink'] +
-                                           birthdata_2['out_mage'] +
-                                           birthdata_2['out_meduc'] +
-                                           birthdata_2['out_monpre'] +
-                                           birthdata_2['out_npvis'] +
-                                           birthdata_2['out_fage'] +
-                                           birthdata_2['out_feduc'] +
-                                           birthdata_2['out_omaps'] +
-                                           birthdata_2['out_fmaps'] +
-                                           birthdata_2['out_cigs'] +
-                                           birthdata_2['out_drink'] + -1
+#######################
+# 
+lm_full = smf.ols(formula = """bwght ~     birthdata['mage'] +
+                                           birthdata['meduc'] +
+                                           birthdata['monpre'] +
+                                           birthdata['npvis'] +
+                                           birthdata['fage'] +
+                                           birthdata['feduc'] +
+                                           birthdata['omaps'] +
+                                           birthdata['fmaps'] +
+                                           birthdata['cigs'] +
+                                           birthdata['drink'] +
+                                           birthdata['male'] +
+                                           birthdata['mwhte'] +
+                                           birthdata['mblck'] +
+                                           birthdata['moth'] +
+                                           birthdata['fwhte'] +
+                                           birthdata['fblck'] +
+                                           birthdata['foth'] +
+                                           birthdata['m_meduc'] +
+                                           birthdata['m_monpre'] +
+                                           birthdata['m_npvis'] +
+                                           birthdata['m_fage'] +
+                                           birthdata['m_feduc'] +
+                                           birthdata['m_omaps'] +
+                                           birthdata['m_fmaps'] +
+                                           birthdata['m_cigs'] +
+                                           birthdata['m_drink'] +
+                                           birthdata['out_mage'] +
+                                           birthdata['out_meduc'] +
+                                           birthdata['out_monpre'] +
+                                           birthdata['out_npvis'] +
+                                           birthdata['out_fage'] +
+                                           birthdata['out_feduc'] +
+                                           birthdata['out_omaps'] +
+                                           birthdata['out_fmaps'] +
+                                           birthdata['out_cigs'] +
+                                           birthdata['out_drink'] + -1
                                            """,
-                         data = birthdata_2)
+                         data = birthdata)
 
 
 # Fitting Results
@@ -738,23 +782,24 @@ Adjusted R-Squared: {results.rsquared_adj.round(3)}
 # Significant Model
 ########################
 
-lm_significant = smf.ols(formula = """bwght ~    birthdata_2['mage'] +
-                                                 birthdata_2['monpre']+
-                                                 birthdata_2['fage'] +
-                                                 birthdata_2['fmaps'] +
-                                                 birthdata_2['male'] +
-                                                 birthdata_2['mwhte'] +
-                                                 birthdata_2['moth'] +
-                                                 birthdata_2['fwhte'] +
-                                                 birthdata_2['fblck'] +
-                                                 birthdata_2['m_fage'] +
-                                                 birthdata_2['m_omaps'] +
-                                                 birthdata_2['m_fmaps'] +
-                                                 birthdata_2['out_omaps'] +
-                                                 birthdata_2['out_fmaps'] +
-                                                 birthdata_2['out_cigs'] + -1
+lm_significant = smf.ols(formula = """bwght ~    birthdata['mage'] +
+                                                 birthdata['monpre']+
+                                                 birthdata['fage'] +
+                                                 birthdata['omaps'] +
+                                                 birthdata['fmaps'] +
+                                                 birthdata['male'] +
+                                                 birthdata['mwhte'] +
+                                                 birthdata['moth'] +
+                                                 birthdata['fwhte'] +
+                                                 birthdata['fblck'] +
+                                                 birthdata['m_fage'] +
+                                                 birthdata['m_omaps'] +
+                                                 birthdata['m_fmaps'] +
+                                                 birthdata['out_omaps'] +
+                                                 birthdata['out_fmaps'] +
+                                                 birthdata['out_cigs'] + -1
                                            """,
-                         data = birthdata_2)
+                         data = birthdata)
    
     
 # Fitting Results
@@ -772,8 +817,389 @@ Summary Statistics:
 R-Squared:          {results.rsquared.round(3)}
 Adjusted R-Squared: {results.rsquared_adj.round(3)}
 """)
+  
+from sklearn.model_selection import train_test_split # train/test split
+from sklearn.neighbors import KNeighborsRegressor # KNN for Regression
+import statsmodels.formula.api as smf # regression modeling
+
+birth_data = birthdata.drop(['bwght'], axis = 1)
+
+
+birth_target = birthdata.loc[:, 'bwght']
+
+
+
+
+X_train, X_test, y_train, y_test = train_test_split(
+            birth_data,
+            birth_target)
+
+# Let's check to make sure our shapes line up.
+
+# Training set 
+print(X_train.shape)
+print(y_train.shape)
+
+# Testing set
+print(X_test.shape)
+print(y_test.shape)
+
+
+
+
+X_train, X_test, y_train, y_test = train_test_split(
+            birth_data,
+            birth_target,
+            test_size = 0.25,
+            random_state = 709)
+
+
+
+# Checking shapes again.
+
+# Training set 
+print(X_train.shape)
+print(y_train.shape)
+
+# Testing set
+print(X_test.shape)
+print(y_test.shape)
+
+
+########################
+# Step 1: Create a model object
+########################
+
+# Creating a regressor object
+knn_reg = KNeighborsRegressor(algorithm = 'auto',
+                              n_neighbors = 1)
+
+
+
+# Checking the type of this new object
+type(knn_reg)
+
+
+# Teaching (fitting) the algorithm based on the training data
+knn_reg.fit(X_train, y_train)
+
+
+
+# Predicting on the X_data that the model has never seen before
+y_pred = knn_reg.predict(X_test)
+
+
+
+# Printing out prediction values for each test observation
+print(f"""
+Test set predictions:
+{y_pred}
+""")
+
+
+
+# Calling the score method, which compares the predicted values to the actual
+# values
+y_score = knn_reg.score(X_test, y_test)
+
+
+
+# The score is directly comparable to R-Square
+print(y_score)
+
+
+birthdata.to_excel('birthdata_3.xlsx')   
     
 
-birthdata.to_excel('birthdata_1.xlsx')   
+###############################################################################
+# How Many Neighbors?
+###############################################################################
+
+"""
+Prof. Chase:
+    We can spend some time testing out several different k-values, but it
+    would be easier to use a loop and visually inspect the optimal value for k.
+"""
+
+
+# This is the exact code we were using before
+X_train, X_test, y_train, y_test = train_test_split(
+            birth_data,
+            birth_target,
+            test_size = 0.25,
+            random_state = 709)
+
+
+
+# Creating two lists, one for training set accuracy and the other for test
+# set accuracy
+training_accuracy = []
+test_accuracy = []
+
+
+
+# Building a visualization to check to see  1 to 50
+neighbors_settings = range(1, 51)
+
+
+for n_neighbors in neighbors_settings:
+    # Building the model
+    clf = KNeighborsRegressor(n_neighbors = n_neighbors)
+    clf.fit(X_train, y_train)
     
-birthdata_2.to_excel('birthdata_Dummies.xlsx')
+    # Recording the training set accuracy
+    training_accuracy.append(clf.score(X_train, y_train))
+    
+    # Recording the generalization accuracy
+    test_accuracy.append(clf.score(X_test, y_test))
+
+
+# Plotting the visualization
+fig, ax = plt.subplots(figsize=(12,9))
+plt.plot(neighbors_settings, training_accuracy, label = "training accuracy")
+plt.plot(neighbors_settings, test_accuracy, label = "test accuracy")
+plt.ylabel("Accuracy")
+plt.xlabel("n_neighbors")
+plt.legend()
+plt.show()
+
+
+########################
+# What is the optimal number of neighbors?
+########################
+
+print(test_accuracy)
+
+# Building a model with k = 8
+knn_reg = KNeighborsRegressor(algorithm = 'auto',
+                              n_neighbors = 8)
+
+
+
+# Fitting the model based on the training data
+knn_reg.fit(X_train, y_train)
+
+
+
+# Scoring the model
+y_score = knn_reg.score(X_test, y_test)
+
+
+
+# The score is directly comparable to R-Square
+print(y_score)
+
+
+
+print(f"""
+Our base to compare other models is {y_score.round(3)}.
+    
+This base helps us evaluate more complicated models and lets us consider
+tradeoffs between accuracy and interpretability.
+""")
+
+
+########################
+## Does OLS predict better than KNN?
+########################
+
+from sklearn.linear_model import LinearRegression
+
+X_train, X_test, y_train, y_test = train_test_split(
+            birth_data,
+            birth_target,
+            test_size = 0.25,
+            random_state = 508)
+
+
+
+# Prepping the Model
+lr = LinearRegression(fit_intercept = False)
+
+
+# Fitting the model
+lr_fit = lr.fit(X_train, y_train)
+
+
+# Predictions
+lr_pred = lr_fit.predict(X_test)
+
+
+print(f"""
+Test set predictions:
+{y_pred.round(2)}
+""")
+
+
+
+# Scoring the model
+y_score_ols_optimal = lr_fit.score(X_test, y_test)
+
+
+# The score is directly comparable to R-Square
+print(y_score_ols_optimal)
+
+
+# Let's compare the testing score to the training score.
+
+print('Training Score', lr.score(X_train, y_train).round(4))
+print('Testing Score:', lr.score(X_test, y_test).round(4))
+
+
+# Printing model results
+print(f"""
+Full model KNN score:    {y_score.round(3)}
+Optimal model OLS score: {y_score_ols_optimal.round(3)}
+""")
+
+
+
+
+
+
+
+
+'''
+###############################################################################
+# OLS Regression Analysis in statsmodels
+###############################################################################
+
+"""
+Prof. Chase:
+    Now that we have a learning base, we can develop a base model using OLS
+    linear regression. Our goal in this step is to discover which parameters
+    have the strongest effects on our response variable.
+    
+    Later, we will try to improve our predictive accuracy using more advanced
+    modeling techniques.
+    
+    Keep in mind, many machine learning methods do not have the concept of
+    p-values, so our base modeling is a great opportunity to discover the best
+    variables for our model.
+"""
+
+
+# This is the exact code we were using before
+X_train, X_test, y_train, y_test = train_test_split(
+            birth_data,
+            birth_target,
+            test_size = 0.25,
+            random_state = 709)
+
+
+
+# We need to merge our X_train and y_train sets so that they can be
+# used in statsmodels
+birth_train = pd.concat([X_train, y_train], axis = 1)
+
+
+
+# Review of statsmodels.ols
+
+# Step 1: Build the model
+lm_price_qual = smf.ols(formula = """bwght ~      birth_train['monpre'] +
+                                                  birth_train['npvis'] +
+                                                  birth_train['fage'] +
+                                                  birth_train['feduc'] +
+                                                  birth_train['fmaps'] +
+                                                  birth_train['male'] +
+                                                  birth_train['fwhte'] +
+                                                  birth_train['fblck'] +
+                                                  birth_train['m_fage'] +
+                                                  birth_train['m_omaps'] +
+                                                  birth_train['m_fmaps'] +
+                                                  birth_train['m_cigs'] +
+                                                  birth_train['out_omaps'] +
+                                                  birth_train['out_fmaps'] +
+                                                  birth_train['out_cigs'] + -1
+                                                  """,
+                                                  data = birth_train)
+
+# Step 2: Fit the model based on the data
+results = lm_price_qual.fit()
+
+
+
+# Step 3: Analyze the summary output
+print(results.summary())
+
+
+###############################################################################
+# Applying the Optimal Model in scikit-learn
+###############################################################################
+
+# Preparing a DataFrame based the the analysis above
+birth_data   = birthdata.loc[:,['monpre',
+                                'npvis',
+                                'fage',
+                                'feduc',
+                                'fmaps',
+                                'male',
+                                'fwhte',
+                                'fblck',
+                                'm_fage',
+                                'm_omaps',
+                                'm_fmaps',
+                                'm_cigs',
+                                'out_omaps',
+                                'out_fmaps',
+                                'out_cigs']]
+
+
+# Preparing the target variable
+birth_target = birthdata.loc[:, 'bwght']
+
+
+# Same code as before
+X_train, X_test, y_train, y_test = train_test_split(
+            birth_data,
+            birth_target,
+            test_size = 0.25,
+            random_state = 508)
+
+
+
+########################
+# Using KNN  on the optimal model (same code as before)
+########################
+
+# Exact loop as before
+training_accuracy = []
+test_accuracy = []
+
+
+
+neighbors_settings = range(1, 51)
+
+
+for n_neighbors in neighbors_settings:
+    # build the model
+    clf = KNeighborsRegressor(n_neighbors = n_neighbors)
+    clf.fit(X_train, y_train)
+    
+    # record training set accuracy
+    training_accuracy.append(clf.score(X_train, y_train))
+    
+    # record generalization accuracy
+    test_accuracy.append(clf.score(X_test, y_test))
+
+
+
+plt.plot(neighbors_settings, training_accuracy, label = "training accuracy")
+plt.plot(neighbors_settings, test_accuracy, label = "test accuracy")
+plt.ylabel("Accuracy")
+plt.xlabel("n_neighbors")
+plt.legend()
+
+
+
+print(test_accuracy)
+
+'''
+
+
+
+
+
+
+
