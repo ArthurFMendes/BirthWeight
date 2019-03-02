@@ -256,7 +256,7 @@ m_cigs
 m_drink
 
 """
-'''
+
 
 
 ########################
@@ -409,7 +409,7 @@ plt.savefig('Birth Data 3 of 3.png')
 
 plt.show()
 
-'''
+
 birthdata_quantiles = birthdata.loc[:, :].quantile([0.05,
                                                 0.40,
                                                 0.60,
@@ -616,25 +616,6 @@ for val in enumerate(birthdata.loc[ : , 'drink']):
         birthdata.loc[val[0], 'out_drink'] = 1
 
 
-########################
-# bwght
-
-for val in enumerate(birthdata.loc[ : , 'bwght']):
-    
-    if val[1] < 2500:
-        birthdata.loc[val[0], 'out_bwght'] = -1
-
-
-for val in enumerate(birthdata.loc[ : , 'bwght']):
-    
-    if val[1] > 3800:
-        birthdata.loc[val[0], 'out_bwght'] = 1
-
-for val in enumerate(birthdata.loc[ : , 'bwght']):
-    
-    if val[1] >= 2500 and val[1] <= 3800:
-        birthdata.loc[val[0], 'out_bwght'] = 0
-
 ###############################################################################
 # Correlation Analysis
 ###############################################################################
@@ -817,7 +798,11 @@ Summary Statistics:
 R-Squared:          {results.rsquared.round(3)}
 Adjusted R-Squared: {results.rsquared_adj.round(3)}
 """)
-  
+
+############################################################################
+# Machine Learnig
+############################################################################
+
 from sklearn.model_selection import train_test_split # train/test split
 from sklearn.neighbors import KNeighborsRegressor # KNN for Regression
 import statsmodels.formula.api as smf # regression modeling
@@ -914,13 +899,6 @@ birthdata.to_excel('birthdata_3.xlsx')
 ###############################################################################
 # How Many Neighbors?
 ###############################################################################
-
-"""
-Prof. Chase:
-    We can spend some time testing out several different k-values, but it
-    would be easier to use a loop and visually inspect the optimal value for k.
-"""
-
 
 # This is the exact code we were using before
 X_train, X_test, y_train, y_test = train_test_split(
@@ -1051,152 +1029,6 @@ print(f"""
 Full model KNN score:    {y_score.round(3)}
 Optimal model OLS score: {y_score_ols_optimal.round(3)}
 """)
-
-
-
-
-
-
-
-
-'''
-###############################################################################
-# OLS Regression Analysis in statsmodels
-###############################################################################
-
-"""
-Prof. Chase:
-    Now that we have a learning base, we can develop a base model using OLS
-    linear regression. Our goal in this step is to discover which parameters
-    have the strongest effects on our response variable.
-    
-    Later, we will try to improve our predictive accuracy using more advanced
-    modeling techniques.
-    
-    Keep in mind, many machine learning methods do not have the concept of
-    p-values, so our base modeling is a great opportunity to discover the best
-    variables for our model.
-"""
-
-
-# This is the exact code we were using before
-X_train, X_test, y_train, y_test = train_test_split(
-            birth_data,
-            birth_target,
-            test_size = 0.25,
-            random_state = 709)
-
-
-
-# We need to merge our X_train and y_train sets so that they can be
-# used in statsmodels
-birth_train = pd.concat([X_train, y_train], axis = 1)
-
-
-
-# Review of statsmodels.ols
-
-# Step 1: Build the model
-lm_price_qual = smf.ols(formula = """bwght ~      birth_train['monpre'] +
-                                                  birth_train['npvis'] +
-                                                  birth_train['fage'] +
-                                                  birth_train['feduc'] +
-                                                  birth_train['fmaps'] +
-                                                  birth_train['male'] +
-                                                  birth_train['fwhte'] +
-                                                  birth_train['fblck'] +
-                                                  birth_train['m_fage'] +
-                                                  birth_train['m_omaps'] +
-                                                  birth_train['m_fmaps'] +
-                                                  birth_train['m_cigs'] +
-                                                  birth_train['out_omaps'] +
-                                                  birth_train['out_fmaps'] +
-                                                  birth_train['out_cigs'] + -1
-                                                  """,
-                                                  data = birth_train)
-
-# Step 2: Fit the model based on the data
-results = lm_price_qual.fit()
-
-
-
-# Step 3: Analyze the summary output
-print(results.summary())
-
-
-###############################################################################
-# Applying the Optimal Model in scikit-learn
-###############################################################################
-
-# Preparing a DataFrame based the the analysis above
-birth_data   = birthdata.loc[:,['monpre',
-                                'npvis',
-                                'fage',
-                                'feduc',
-                                'fmaps',
-                                'male',
-                                'fwhte',
-                                'fblck',
-                                'm_fage',
-                                'm_omaps',
-                                'm_fmaps',
-                                'm_cigs',
-                                'out_omaps',
-                                'out_fmaps',
-                                'out_cigs']]
-
-
-# Preparing the target variable
-birth_target = birthdata.loc[:, 'bwght']
-
-
-# Same code as before
-X_train, X_test, y_train, y_test = train_test_split(
-            birth_data,
-            birth_target,
-            test_size = 0.25,
-            random_state = 508)
-
-
-
-########################
-# Using KNN  on the optimal model (same code as before)
-########################
-
-# Exact loop as before
-training_accuracy = []
-test_accuracy = []
-
-
-
-neighbors_settings = range(1, 51)
-
-
-for n_neighbors in neighbors_settings:
-    # build the model
-    clf = KNeighborsRegressor(n_neighbors = n_neighbors)
-    clf.fit(X_train, y_train)
-    
-    # record training set accuracy
-    training_accuracy.append(clf.score(X_train, y_train))
-    
-    # record generalization accuracy
-    test_accuracy.append(clf.score(X_test, y_test))
-
-
-
-plt.plot(neighbors_settings, training_accuracy, label = "training accuracy")
-plt.plot(neighbors_settings, test_accuracy, label = "test accuracy")
-plt.ylabel("Accuracy")
-plt.xlabel("n_neighbors")
-plt.legend()
-
-
-
-print(test_accuracy)
-
-'''
-
 
 
 
